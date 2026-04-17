@@ -123,19 +123,91 @@ function formatColumnLabel(column) {
 
 function formatCellValue(record, column) {
   const value = record[column];
-  return value !== undefined && value !== null && value !== "" ? value : "N/A";
+  if (value === undefined || value === null || value === "") {
+    return "N/A";
+  }
+
+  return formatReadableValue(value, column);
+}
+
+function toTitleCase(value) {
+  return value
+    .toLowerCase()
+    .replace(/\b([a-z])/g, (match) => match.toUpperCase());
+}
+
+function formatReadableValue(value, key = "") {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  const upperCaseKeys = new Set(["days"]);
+  const titleCaseKeys = new Set([
+    "lastname",
+    "firstname",
+    "course_desc",
+    "course_descr",
+    "subjdesc",
+    "teacher_name",
+    "status"
+  ]);
+
+  if (upperCaseKeys.has(key)) {
+    return trimmed.toUpperCase();
+  }
+
+  if (titleCaseKeys.has(key)) {
+    return toTitleCase(trimmed);
+  }
+
+  return trimmed;
 }
 
 function buildOptionLabel(item, field) {
-  const primary = item[field.labelKey];
-  const secondary = field.secondaryLabelKey ? item[field.secondaryLabelKey] : "";
-  const tertiary = field.tertiaryLabelKey ? item[field.tertiaryLabelKey] : "";
+  const primary = formatReadableValue(item[field.labelKey], field.labelKey);
+  const secondary = field.secondaryLabelKey ? formatReadableValue(item[field.secondaryLabelKey], field.secondaryLabelKey) : "";
+  const tertiary = field.tertiaryLabelKey ? formatReadableValue(item[field.tertiaryLabelKey], field.tertiaryLabelKey) : "";
 
   return [primary, secondary, tertiary].filter(Boolean).join(" - ");
 }
 
 function normalizeSearchValue(value) {
   return String(value ?? "").toLowerCase().trim();
+}
+
+function formatApiErrorDetails(payload) {
+  if (!payload) {
+    return "";
+  }
+
+  if (typeof payload === "string") {
+    return payload.trim();
+  }
+
+  if (typeof payload === "object") {
+    if (payload.message) {
+      return String(payload.message).trim();
+    }
+
+    const code = payload.code ? String(payload.code).trim() : "";
+    const address = payload.address ? String(payload.address).trim() : "";
+    const port = payload.port ? String(payload.port).trim() : "";
+
+    if (code && address && port) {
+      return `${code} (${address}:${port})`;
+    }
+
+    if (code) {
+      return code;
+    }
+  }
+
+  return "";
 }
 
 function App() {
@@ -157,6 +229,7 @@ function App() {
   const searchPlaceholder = searchPlaceholderColumns.length
     ? `Search ${currentConfig.title.toLowerCase()} by ${searchPlaceholderColumns.join(" or ")}`
     : `Search ${currentConfig.title.toLowerCase()}`;
+  const hasAnyErrors = Object.values(errors).some(Boolean);
   const filteredRows = currentRows.filter((record) => {
     if (!searchTerms.length) {
       return true;
@@ -169,7 +242,16 @@ function App() {
   async function fetchResource(resourceKey) {
     const response = await fetch(RESOURCE_CONFIG[resourceKey].endpoint);
     if (!response.ok) {
-      throw new Error(`Failed to fetch ${resourceKey}`);
+      let details = "";
+
+      try {
+        const payload = await response.json();
+        details = formatApiErrorDetails(payload);
+      } catch (error) {
+        details = "";
+      }
+
+      throw new Error(details ? `Failed to fetch ${resourceKey}: ${details}` : `Failed to fetch ${resourceKey}`);
     }
     return response.json();
   }
@@ -209,6 +291,18 @@ function App() {
   useEffect(() => {
     loadAllResources();
   }, [loadAllResources]);
+
+  useEffect(() => {
+    if (!hasAnyErrors || loading) {
+      return undefined;
+    }
+
+    const retryId = window.setTimeout(() => {
+      loadAllResources(true);
+    }, 3000);
+
+    return () => window.clearTimeout(retryId);
+  }, [hasAnyErrors, loading, loadAllResources]);
 
   useEffect(() => {
     setSearch("");
