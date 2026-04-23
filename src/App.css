@@ -6,7 +6,9 @@ body {
   margin: 0;
   background: #eef3f8;
   color: #1f2937;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
 }
 
 button,
@@ -36,13 +38,8 @@ select {
 }
 
 .brand-title {
-  font-size: 1.25rem;
+  font-size: 1.38rem;
   font-weight: 700;
-}
-
-.brand-subtitle {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.85);
 }
 
 .main-nav {
@@ -52,7 +49,6 @@ select {
 }
 
 .nav-link,
-.refresh-button,
 .page-add-button,
 .save-button,
 .icon-button {
@@ -66,20 +62,14 @@ select {
   border-radius: 8px;
   background: transparent;
   color: #dbeafe;
+  font-size: 0.98rem;
+  font-weight: 600;
 }
 
 .nav-link:hover,
 .nav-link.active {
   background: rgba(255, 255, 255, 0.16);
   color: #ffffff;
-}
-
-.refresh-button {
-  padding: 10px 16px;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #1d4ed8;
-  font-weight: 700;
 }
 
 .page-header {
@@ -104,10 +94,6 @@ select {
   box-shadow: 0 6px 14px rgba(29, 78, 216, 0.22);
 }
 
-.page-actions {
-  padding: 0 24px 16px;
-}
-
 .page-header h1 {
   margin: 0;
   font-size: 2rem;
@@ -118,25 +104,210 @@ select {
   color: #4b5563;
 }
 
-.sample-card {
-  min-width: 240px;
-  padding: 14px 16px;
-  border-radius: 10px;
+.enrollment-layout {
+  gap: 16px;
+}
+
+.enrollment-workspace {
+  display: grid;
+  gap: 18px;
+}
+
+.workspace-card {
   background: #ffffff;
-  border-left: 5px solid #1d4ed8;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
 }
 
-.sample-card span {
-  display: block;
-  font-size: 0.8rem;
+.workspace-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.workspace-card-header h2 {
+  margin: 0 0 6px;
+  font-size: 1.4rem;
+}
+
+.workspace-card-header p {
+  margin: 0;
   color: #6b7280;
-  text-transform: uppercase;
+  font-size: 1.02rem;
 }
 
-.sample-card strong {
-  display: block;
-  margin-top: 6px;
+.header-meta {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  color: #64748b;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.header-meta small {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.units-pill,
+.workspace-total {
+  display: grid;
+  gap: 4px;
+  min-width: 120px;
+  padding: 12px 14px;
+  border-radius: 4px;
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+
+.units-pill span,
+.workspace-total span,
+.summary-field span {
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.units-pill strong,
+.workspace-total strong,
+.summary-field strong {
+  font-size: 1.65rem;
+  line-height: 1.15;
+}
+
+.enrollment-top-row,
+.student-summary-grid,
+.details-toolbar,
+.workspace-footer {
+  padding: 18px 20px;
+}
+
+.enrollment-top-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 520px);
+  gap: 14px;
+  align-items: end;
+}
+
+.lookup-box {
+  display: grid;
+  gap: 8px;
+}
+
+.lookup-box span {
+  font-size: 1rem;
+  color: #4b5563;
+}
+
+.lookup-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  gap: 8px;
+}
+
+.lookup-input-row input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 1rem;
+}
+
+.lookup-button,
+.ghost-button {
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.lookup-button {
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.student-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  padding-top: 0;
+}
+
+.summary-field {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.details-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 360px) minmax(240px, 1fr);
+  gap: 14px;
+  padding-bottom: 0;
+}
+
+.table-section-label {
+  padding: 0 20px;
+  margin-top: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.edp-box {
+  max-width: 360px;
+}
+
+.enrollment-select-field {
+  max-width: 420px;
+}
+
+.workspace-table-wrap {
+  overflow: auto;
+  padding: 18px 20px 0;
+}
+
+.details-table th:last-child,
+.details-table td:last-child {
+  width: 88px;
+}
+
+.empty-inline-message {
+  margin: 0;
+}
+
+.workspace-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.workspace-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.ghost-button {
+  padding: 12px 16px;
+  background: #e2e8f0;
+  color: #1f2937;
+  font-weight: 700;
 }
 
 .content-grid {
@@ -234,7 +405,7 @@ select {
 
 .record-count {
   color: #6b7280;
-  font-size: 0.95rem;
+  font-size: 1.02rem;
 }
 
 .message {
@@ -243,6 +414,7 @@ select {
   border-radius: 8px;
   background: #f8fafc;
   color: #475569;
+  font-size: 1rem;
 }
 
 .message.error {
@@ -257,7 +429,7 @@ select {
   border-radius: 8px;
   background: #dcfce7;
   color: #166534;
-  font-size: 0.9rem;
+  font-size: 0.98rem;
   font-weight: 600;
 }
 
@@ -276,15 +448,17 @@ table {
 
 th,
 td {
-  padding: 12px 14px;
+  padding: 14px 16px;
   border-bottom: 1px solid #e5e7eb;
   text-align: left;
+  font-size: 1.03rem;
 }
 
 th {
   background: #eff6ff;
   color: #1e3a8a;
-  font-size: 0.85rem;
+  font-size: 1.02rem;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
@@ -338,21 +512,23 @@ tbody tr:hover {
 }
 
 .field span {
-  font-size: 0.9rem;
+  font-size: 0.98rem;
   color: #4b5563;
 }
 
 .save-button {
-  padding: 12px 16px;
+  padding: 12px 18px;
   border-radius: 8px;
   background: #1d4ed8;
   color: #ffffff;
   font-weight: 700;
+  font-size: 1rem;
 }
 
 .save-button:hover,
-.refresh-button:hover,
-.page-add-button:hover {
+.page-add-button:hover,
+.ghost-button:hover,
+.lookup-button:hover {
   transform: translateY(-1px);
 }
 
@@ -396,7 +572,6 @@ tbody tr:hover {
 @media (max-width: 720px) {
   .topbar,
   .page-header,
-  .page-actions,
   .content-grid {
     padding-left: 14px;
     padding-right: 14px;
@@ -407,13 +582,25 @@ tbody tr:hover {
     align-items: flex-start;
   }
 
-  .sample-card {
-    width: 100%;
-  }
-
   .panel-toolbar {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .workspace-card-header,
+  .workspace-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-meta {
+    justify-items: start;
+  }
+
+  .enrollment-top-row,
+  .student-summary-grid,
+  .details-toolbar {
+    grid-template-columns: 1fr;
   }
 
   .toolbar-actions {
@@ -426,5 +613,9 @@ tbody tr:hover {
 
   .search-box {
     width: 100%;
+  }
+
+  .edp-box {
+    max-width: none;
   }
 }
