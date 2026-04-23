@@ -10,12 +10,14 @@ import EnrollmentDraftDetailsWorkspace from "./components/enrollment/EnrollmentD
 import EnrollmentDetailsWorkspace from "./components/enrollment/EnrollmentDetailsWorkspace";
 import useResourceData from "./hooks/useResourceData";
 import useEnrollmentWorkspace from "./hooks/useEnrollmentWorkspace";
+import { validateResourceForm } from "./utils/validation";
 
 function App() {
   const [activeResource, setActiveResource] = useState("students");
   const [actionAlert, setActionAlert] = useState("");
   const [search, setSearch] = useState("");
   const [formState, setFormState] = useState(EMPTY_FORM);
+  const [formFieldErrors, setFormFieldErrors] = useState({});
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
 
@@ -154,6 +156,20 @@ function App() {
         [fieldName]: value
       }
     }));
+
+    setFormFieldErrors((previous) => {
+      if (!previous[resourceKey]?.[fieldName]) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        [resourceKey]: {
+          ...previous[resourceKey],
+          [fieldName]: ""
+        }
+      };
+    });
   }
 
   function openAddForm() {
@@ -170,6 +186,10 @@ function App() {
     setFormState((previous) => ({
       ...previous,
       [activeResource]: EMPTY_FORM[activeResource]
+    }));
+    setFormFieldErrors((previous) => ({
+      ...previous,
+      [activeResource]: {}
     }));
     setIsFormOpen(true);
   }
@@ -226,6 +246,10 @@ function App() {
         ...previous,
         [activeResource]: nextForm
       }));
+      setFormFieldErrors((previous) => ({
+        ...previous,
+        [activeResource]: {}
+      }));
       setIsFormOpen(true);
     } catch (error) {
       const nextForm = mapRecordToForm(record);
@@ -233,6 +257,10 @@ function App() {
       setFormState((previous) => ({
         ...previous,
         [activeResource]: nextForm
+      }));
+      setFormFieldErrors((previous) => ({
+        ...previous,
+        [activeResource]: {}
       }));
       setErrors((previous) => ({
         ...previous,
@@ -272,11 +300,12 @@ function App() {
   function renderField(field) {
     const value = formState[activeResource][field.name];
     const isPrimaryKeyField = editingRecord !== null && field.name === currentConfig.primaryKey;
+    const fieldError = formFieldErrors[activeResource]?.[field.name];
 
     if (field.type === "resource-select") {
       const options = records[field.resource] || [];
       return (
-        <label key={field.name} className="field">
+        <label key={field.name} className={`field ${fieldError ? "has-error" : ""}`}>
           <span>{field.label}</span>
           <select
             value={value}
@@ -290,13 +319,14 @@ function App() {
               </option>
             ))}
           </select>
+          {fieldError ? <small className="field-error">{fieldError}</small> : null}
         </label>
       );
     }
 
     if (field.type === "select") {
       return (
-        <label key={field.name} className="field">
+        <label key={field.name} className={`field ${fieldError ? "has-error" : ""}`}>
           <span>{field.label}</span>
           <select
             value={value}
@@ -310,12 +340,13 @@ function App() {
               </option>
             ))}
           </select>
+          {fieldError ? <small className="field-error">{fieldError}</small> : null}
         </label>
       );
     }
 
     return (
-      <label key={field.name} className="field">
+      <label key={field.name} className={`field ${fieldError ? "has-error" : ""}`}>
         <span>{field.label}</span>
         <input
           type={field.type || "text"}
@@ -327,6 +358,7 @@ function App() {
           placeholder={field.placeholder}
           disabled={isPrimaryKeyField}
         />
+        {fieldError ? <small className="field-error">{fieldError}</small> : null}
       </label>
     );
   }
@@ -345,6 +377,19 @@ function App() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+
+    const validationErrors = validateResourceForm(currentConfig, formState[activeResource]);
+    if (Object.keys(validationErrors).length) {
+      setFormFieldErrors((previous) => ({
+        ...previous,
+        [activeResource]: validationErrors
+      }));
+      setErrors((previous) => ({
+        ...previous,
+        [activeResource]: "Please fix the highlighted fields."
+      }));
+      return;
+    }
 
     const payload = Object.entries(formState[activeResource]).reduce((result, [field, value]) => {
       if (value.trim()) {
@@ -375,6 +420,10 @@ function App() {
       setFormState((previous) => ({
         ...previous,
         [activeResource]: EMPTY_FORM[activeResource]
+      }));
+      setFormFieldErrors((previous) => ({
+        ...previous,
+        [activeResource]: {}
       }));
 
       setIsFormOpen(false);

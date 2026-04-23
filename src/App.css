@@ -516,6 +516,18 @@ tbody tr:hover {
   color: #4b5563;
 }
 
+.field.has-error input,
+.field.has-error select {
+  border-color: #dc2626;
+  background: #fff7f7;
+}
+
+.field-error {
+  color: #b91c1c;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
 .save-button {
   padding: 12px 18px;
   border-radius: 8px;
