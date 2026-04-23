@@ -24,7 +24,7 @@ function runCommand(command, args, cwd, extraEnv = {}) {
 }
 
 const backend = runCommand("npm", ["start"], backendDir);
-const frontend = runCommand("npx", ["react-scripts", "start"], frontendDir, {
+const frontend = runCommand("npm", ["run", "start:react"], frontendDir, {
   BROWSER: process.env.BROWSER || "default"
 });
 
