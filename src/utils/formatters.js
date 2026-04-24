@@ -1,4 +1,4 @@
-const UPPER_CASE_KEYS = new Set(["days"]);
+const UPPER_CASE_KEYS = new Set(["days", "course_code"]);
 const TITLE_CASE_KEYS = new Set([
   "lastname",
   "firstname",
@@ -57,25 +57,67 @@ export function formatCellValue(record, column) {
     return "N/A";
   }
 
+  if (column === "start_time" || column === "end_time") {
+    return formatTimeValue(value);
+  }
+
   return formatReadableValue(value, column);
 }
 
+export function normalizeTimeTo24Hour(value) {
+  const raw = String(value ?? "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  const ampmMatch = raw.match(/^(\d{1,2}):(\d{2})(?:\s*)(AM|PM)$/i);
+  if (ampmMatch) {
+    const hourValue = Number(ampmMatch[1]);
+    const minuteValue = ampmMatch[2];
+    const suffix = ampmMatch[3].toUpperCase();
+
+    if (Number.isNaN(hourValue) || hourValue < 1 || hourValue > 12) {
+      return "";
+    }
+
+    let hour24 = hourValue % 12;
+    if (suffix === "PM") {
+      hour24 += 12;
+    }
+
+    return `${String(hour24).padStart(2, "0")}:${minuteValue}`;
+  }
+
+  const shortMatch = raw.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (!shortMatch) {
+    return "";
+  }
+
+  const hourValue = Number(shortMatch[1]);
+  const minuteValue = shortMatch[2];
+
+  if (Number.isNaN(hourValue) || hourValue < 0 || hourValue > 23) {
+    return "";
+  }
+
+  return `${String(hourValue).padStart(2, "0")}:${minuteValue}`;
+}
+
 function formatTimeValue(value) {
-  if (!value) {
+  const formatted = normalizeTimeTo24Hour(value);
+  if (!formatted) {
     return "--";
   }
 
-  const [hourValue, minuteValue = "00"] = String(value).split(":");
-  const hour = Number(hourValue);
-  const minute = String(minuteValue).slice(0, 2);
-
-  if (Number.isNaN(hour)) {
-    return value;
+  const [hourText, minuteText] = formatted.split(":");
+  const hourValue = Number(hourText);
+  if (Number.isNaN(hourValue)) {
+    return "--";
   }
 
-  const suffix = hour >= 12 ? "PM" : "AM";
-  const normalizedHour = hour % 12 || 12;
-  return `${normalizedHour}:${minute} ${suffix}`;
+  const suffix = hourValue >= 12 ? "PM" : "AM";
+  const hour12 = hourValue % 12 || 12;
+  return `${hour12}:${minuteText} ${suffix}`;
 }
 
 export function formatSchedule(offering) {

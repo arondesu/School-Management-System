@@ -1,7 +1,7 @@
 import "./App.css";
 import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { EMPTY_FORM, RESOURCE_CONFIG, RESOURCE_ENTRIES } from "./config/resources";
-import { buildOptionLabel, formatColumnLabel, normalizeSearchValue } from "./utils/formatters";
+import { buildOptionLabel, formatColumnLabel, normalizeSearchValue, normalizeTimeTo24Hour } from "./utils/formatters";
 import ResourceFormModal from "./components/ResourceFormModal";
 import ResourceTableSection from "./components/ResourceTableSection";
 import AppHeader from "./components/AppHeader";
@@ -266,7 +266,14 @@ function App() {
 
   function mapRecordToForm(record) {
     const nextForm = currentConfig.formFields.reduce((result, field) => {
-      result[field.name] = record[field.name] !== undefined && record[field.name] !== null ? String(record[field.name]) : "";
+      const rawValue = record[field.name] !== undefined && record[field.name] !== null ? String(record[field.name]) : "";
+
+      if (field.type === "time") {
+        result[field.name] = normalizeTimeTo24Hour(rawValue);
+        return result;
+      }
+
+      result[field.name] = rawValue;
       return result;
     }, {});
 
@@ -466,7 +473,16 @@ function App() {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to save ${currentConfig.title.toLowerCase()}.`);
+        let details = "";
+
+        try {
+          const errorPayload = await response.json();
+          details = errorPayload?.message ? String(errorPayload.message).trim() : "";
+        } catch {
+          details = "";
+        }
+
+        throw new Error(details || `Failed to save ${currentConfig.title.toLowerCase()}.`);
       }
 
       setFormState((previous) => ({
