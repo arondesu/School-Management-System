@@ -3,7 +3,7 @@ export function getNextEnrollmentCode(enrollments = []) {
     const matchedDigits = String(record.enroll_code || "").match(/(\d+)/);
     const numericValue = matchedDigits ? Number(matchedDigits[1]) : 0;
     return Number.isFinite(numericValue) ? Math.max(highest, numericValue) : highest;
-  }, 1000);
+  }, 999);
 
   return `ENR${highestNumber + 1}`;
 }

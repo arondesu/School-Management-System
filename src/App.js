@@ -44,7 +44,8 @@ function App() {
     selectedStudentEnrollmentRows,
     selectedEnrollmentDetails,
     selectedEnrollmentTotalUnits,
-    resetEnrollmentSelection
+    resetEnrollmentSelection,
+    loadEnrollmentIntoDraft
   } = useEnrollmentWorkspace({
     activeResource,
     records,
@@ -54,19 +55,47 @@ function App() {
   });
 
   const currentConfig = RESOURCE_CONFIG[activeResource];
-  const currentRows = records[activeResource] || [];
+  const isEnrollmentListResource = activeResource === "enrollment_list";
+  const currentRows = isEnrollmentListResource
+    ? (records.enrollment || []).map((record) => {
+        const matchedStudent = (records.students || []).find((student) => String(student.id) === String(record.student_id)) || {};
+        const lastName = record.lastname || matchedStudent.lastname || "";
+        const firstName = record.firstname || matchedStudent.firstname || "";
+        const courseCode = matchedStudent.course_code || record.course_code || "--";
+        const level = matchedStudent.level || record.level || "--";
+
+        return {
+          ...record,
+          name: [lastName, firstName].filter(Boolean).join(", "),
+          course_level: `${courseCode} - ${level}`
+        };
+      })
+    : records[activeResource] || [];
 
   const searchTerms = normalizeSearchValue(deferredSearch).split(/\s+/).filter(Boolean);
-  const searchPlaceholderColumns = currentConfig.columns
-    .slice(0, 2)
-    .map((column) => formatColumnLabel(column).toLowerCase());
-  const searchPlaceholder = searchPlaceholderColumns.length
-    ? `Search ${currentConfig.title.toLowerCase()} by ${searchPlaceholderColumns.join(" or ")}`
-    : `Search ${currentConfig.title.toLowerCase()}`;
+  const searchPlaceholder = isEnrollmentListResource
+    ? "Search enrollment list by enroll code"
+    : (() => {
+        const searchPlaceholderColumns = currentConfig.columns
+          .slice(0, 2)
+          .map((column) => formatColumnLabel(column).toLowerCase());
+        return searchPlaceholderColumns.length
+          ? `Search ${currentConfig.title.toLowerCase()} by ${searchPlaceholderColumns.join(" or ")}`
+          : `Search ${currentConfig.title.toLowerCase()}`;
+      })();
 
   const filteredRows = currentRows.filter((record) => {
+    if (isEnrollmentListResource && normalizeSearchValue(record.status) !== "enrolled") {
+      return false;
+    }
+
     if (!searchTerms.length) {
       return true;
+    }
+
+    if (isEnrollmentListResource) {
+      const enrollCode = normalizeSearchValue(record.enroll_code);
+      return searchTerms.every((term) => enrollCode.includes(term));
     }
 
     const haystack = Object.values(record).map((value) => normalizeSearchValue(value)).join(" ");
@@ -172,6 +201,20 @@ function App() {
     });
   }
 
+  function handleEnrollmentListCellAction({ record, column }) {
+    if (!isEnrollmentListResource || column !== "enroll_code") {
+      return;
+    }
+
+    const confirmed = window.confirm(`Open enrollment page for ${record.enroll_code}?`);
+    if (!confirmed) {
+      return;
+    }
+
+    loadEnrollmentIntoDraft(record.enroll_id);
+    setActiveResource(enrollmentHeaderResource);
+  }
+
   function openAddForm() {
     if (isCustomEnrollmentScreen) {
       resetEnrollmentDraft();
@@ -206,11 +249,20 @@ function App() {
       return;
     }
 
+    if (activeResource === "enrollment_list") {
+      setActiveResource(enrollmentHeaderResource);
+      return;
+    }
+
     openAddForm();
   }
 
   const pageActionLabel =
-    activeResource === enrollmentDetailsResource ? "Go To Enrollment" : isCustomEnrollmentScreen ? "New Enrollment" : "Add";
+    activeResource === enrollmentDetailsResource || activeResource === "enrollment_list"
+      ? "Go To Enrollment"
+      : isCustomEnrollmentScreen
+      ? "New Enrollment"
+      : "Add";
 
   function mapRecordToForm(record) {
     const nextForm = currentConfig.formFields.reduce((result, field) => {
@@ -514,6 +566,9 @@ function App() {
           searchTerms={searchTerms}
           onEdit={openEditForm}
           onDelete={handleDelete}
+          showActions={!isEnrollmentListResource}
+          onCellAction={handleEnrollmentListCellAction}
+          clickableColumns={isEnrollmentListResource ? ["enroll_code"] : []}
         />
       ) : null}
 

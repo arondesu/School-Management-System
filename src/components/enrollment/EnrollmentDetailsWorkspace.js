@@ -1,5 +1,5 @@
-import React from "react";
-import { buildOptionLabel, formatReadableValue, formatSchedule } from "../../utils/formatters";
+import React, { useEffect, useMemo, useState } from "react";
+import { formatReadableValue, formatSchedule, normalizeSearchValue } from "../../utils/formatters";
 
 function EnrollmentDetailsWorkspace({
   selectedEnrollmentTotalUnits,
@@ -13,30 +13,69 @@ function EnrollmentDetailsWorkspace({
   onDelete,
   onResetSelection
 }) {
+  const [studentLookup, setStudentLookup] = useState("");
+  const [searchError, setSearchError] = useState("");
+
+  const selectedLookupValue = useMemo(() => {
+    const selectedOption = enrollmentStudentOptions.find((item) => String(item.enroll_id) === String(selectedEnrollmentId));
+    return selectedOption ? String(selectedOption.idno || "") : "";
+  }, [enrollmentStudentOptions, selectedEnrollmentId]);
+
+  useEffect(() => {
+    setStudentLookup(selectedLookupValue);
+    setSearchError("");
+  }, [selectedLookupValue]);
+
+  function handleStudentSearch() {
+    const lookupValue = normalizeSearchValue(studentLookup);
+
+    if (!lookupValue) {
+      setSearchError("Enter a student ID number before searching.");
+      return;
+    }
+
+    const matchedOption = enrollmentStudentOptions.find(
+      (item) => normalizeSearchValue(item.idno) === lookupValue || normalizeSearchValue(item.student_id) === lookupValue
+    );
+
+    if (!matchedOption) {
+      setSearchError("Student not found in enrolled records.");
+      return;
+    }
+
+    setSearchError("");
+    setSelectedEnrollmentId(String(matchedOption.enroll_id));
+  }
+
   return (
     <div className="workspace-card enrollment-details-card">
       <div className="workspace-card-header">
         <div>
           <h2>Enrollment Details</h2>
-          <p>View one student profile and all enrolled subjects based on the selected student.</p>
         </div>
       </div>
 
       <div className="details-toolbar">
-        <label className="field enrollment-select-field">
-          <span>Student</span>
-          <select value={selectedEnrollmentId} onChange={(event) => setSelectedEnrollmentId(event.target.value)}>
-            <option value="">Select student</option>
-            {enrollmentStudentOptions.map((item) => (
-              <option key={item.enroll_id} value={item.enroll_id}>
-                {buildOptionLabel(item, {
-                  labelKey: "idno",
-                  secondaryLabelKey: "lastname",
-                  tertiaryLabelKey: "firstname"
-                })}
-              </option>
-            ))}
-          </select>
+        <label className="lookup-box enrollment-select-field">
+          <span>Student ID</span>
+          <div className="lookup-input-row">
+            <input
+              type="text"
+              value={studentLookup}
+              onChange={(event) => setStudentLookup(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  handleStudentSearch();
+                }
+              }}
+              placeholder="Enter ID number"
+            />
+            <button type="button" className="lookup-button" onClick={handleStudentSearch} aria-label="Search student">
+              {"\u2315"}
+            </button>
+          </div>
+          {searchError ? <small className="field-error">{searchError}</small> : null}
         </label>
       </div>
 
@@ -116,9 +155,6 @@ function EnrollmentDetailsWorkspace({
           <strong>{selectedEnrollmentTotalUnits}</strong>
         </div>
         <div className="workspace-actions">
-          <button className="ghost-button" type="button" onClick={onResetSelection}>
-            Reset
-          </button>
         </div>
       </div>
     </div>

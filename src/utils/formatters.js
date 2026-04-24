@@ -14,7 +14,9 @@ export function formatColumnLabel(column) {
     course_code: "Course Code",
     course_descr: "Course Description",
     course_desc: "Course Description",
-    enroll_code: "Enroll Code"
+    course_level: "Course - Level",
+    enroll_code: "Enroll Code",
+    enroll_date: "Date"
   };
 
   if (customLabels[column]) {

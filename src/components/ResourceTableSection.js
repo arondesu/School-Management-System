@@ -12,7 +12,10 @@ function ResourceTableSection({
   loading,
   searchTerms,
   onEdit,
-  onDelete
+  onDelete,
+  showActions = true,
+  onCellAction,
+  clickableColumns = []
 }) {
   return (
     <section className="content-grid">
@@ -57,23 +60,41 @@ function ResourceTableSection({
                   {currentConfig.columns.map((column) => (
                     <th key={column}>{formatColumnLabel(column)}</th>
                   ))}
-                  <th>Actions</th>
+                  {showActions ? <th>Actions</th> : null}
                 </tr>
               </thead>
               <tbody>
                 {filteredRows.map((record, index) => (
                   <tr key={record[currentConfig.primaryKey] ?? `${activeResource}-${index}`}>
-                    {currentConfig.columns.map((column) => (
-                      <td key={column}>{formatCellValue(record, column)}</td>
-                    ))}
-                    <td className="actions-cell">
-                      <button className="icon-button edit-button" type="button" onClick={() => onEdit(record)} aria-label="Edit">
-                        {"\u270E"}
-                      </button>
-                      <button className="icon-button delete-button" type="button" onClick={() => onDelete(record)} aria-label="Delete">
-                        {"\u{1F5D1}"}
-                      </button>
-                    </td>
+                    {currentConfig.columns.map((column) => {
+                      const canClickCell = typeof onCellAction === "function" && clickableColumns.includes(column);
+
+                      return (
+                        <td key={column}>
+                          {canClickCell ? (
+                            <button
+                              type="button"
+                              className="table-link-button"
+                              onClick={() => onCellAction({ record, column })}
+                            >
+                              {formatCellValue(record, column)}
+                            </button>
+                          ) : (
+                            formatCellValue(record, column)
+                          )}
+                        </td>
+                      );
+                    })}
+                    {showActions ? (
+                      <td className="actions-cell">
+                        <button className="icon-button edit-button" type="button" onClick={() => onEdit(record)} aria-label="Edit">
+                          {"\u270E"}
+                        </button>
+                        <button className="icon-button delete-button" type="button" onClick={() => onDelete(record)} aria-label="Delete">
+                          {"\u{1F5D1}"}
+                        </button>
+                      </td>
+                    ) : null}
                   </tr>
                 ))}
               </tbody>

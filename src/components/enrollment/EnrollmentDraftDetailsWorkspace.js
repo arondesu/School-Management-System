@@ -14,12 +14,8 @@ function EnrollmentDraftDetailsWorkspace({
     <div className="workspace-card enrollment-details-card">
       <div className="workspace-card-header">
         <div>
-          <h2>Enrollment Details</h2>
+          <h2></h2>
           <p>Add each offered subject by EDP code, then review the units before saving.</p>
-        </div>
-        <div className="units-pill">
-          <span>Total Units</span>
-          <strong>{totalUnits}</strong>
         </div>
       </div>
 

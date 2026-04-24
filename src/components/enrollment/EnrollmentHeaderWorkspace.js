@@ -12,8 +12,7 @@ function EnrollmentHeaderWorkspace({
     <div className="workspace-card enrollment-header-card">
       <div className="workspace-card-header">
         <div>
-          <h2>Enrollment Header</h2>
-          <p>Find the student first, then confirm the transaction details.</p>
+          <h2>Student Information</h2>
         </div>
         <div className="header-meta">
           <small>{enrollmentHeaderTimestamp}</small>
@@ -36,6 +35,19 @@ function EnrollmentHeaderWorkspace({
             </button>
           </div>
         </label>
+      </div>
+
+      <div className="table-section-label">Enrollment Info</div>
+
+      <div className="enrollment-meta-grid">
+        <div className="summary-field">
+          <span>Student ID</span>
+          <strong>{selectedStudent ? selectedStudent.idno || "--" : "--"}</strong>
+        </div>
+        <div className="summary-field">
+          <span>Enroll Code</span>
+          <strong>{enrollmentDraft.enroll_code || "--"}</strong>
+        </div>
       </div>
 
       <div className="student-summary-grid">

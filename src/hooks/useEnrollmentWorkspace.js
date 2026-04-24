@@ -126,6 +126,56 @@ function useEnrollmentWorkspace({
     setSelectedEnrollmentId(enrollmentStudentOptions[0] ? String(enrollmentStudentOptions[0].enroll_id) : "");
   }
 
+  function loadEnrollmentIntoDraft(targetEnrollmentId) {
+    const matchedEnrollment = enrollmentRows.find((row) => String(row.enroll_id) === String(targetEnrollmentId));
+
+    if (!matchedEnrollment) {
+      setErrors((previous) => ({
+        ...previous,
+        [enrollmentHeaderResource]: "Selected enrollment was not found."
+      }));
+      return;
+    }
+
+    const matchedStudent =
+      studentRows.find((student) => String(student.id) === String(matchedEnrollment.student_id)) || null;
+
+    const nextDetailRows = enrollmentDetailRows
+      .filter((row) => String(row.enroll_id) === String(matchedEnrollment.enroll_id))
+      .map((row) => {
+        const offering = subjectOfferings.find((item) => String(item.suboffid) === String(row.suboffid)) || {};
+        return {
+          suboffid: row.suboffid,
+          edpcode: offering.edpcode || "",
+          subjcode: offering.subjcode || "",
+          subjdesc: offering.subjdesc || "",
+          days: offering.days || "",
+          room: offering.room || "",
+          start_time: offering.start_time || "",
+          end_time: offering.end_time || "",
+          units: offering.units || 0
+        };
+      });
+
+    setSelectedEnrollmentId(String(matchedEnrollment.enroll_id));
+    setEnrollmentDraft({
+      enroll_id: String(matchedEnrollment.enroll_id),
+      studentLookup: String(matchedStudent?.idno || matchedEnrollment.idno || ""),
+      edpLookup: "",
+      enroll_code: String(matchedEnrollment.enroll_code || ""),
+      enroll_date: String(matchedEnrollment.enroll_date || new Date().toISOString().slice(0, 10)),
+      status: String(matchedEnrollment.status || "enrolled"),
+      amt_paid: String(matchedEnrollment.amt_paid ?? ""),
+      student_id: String(matchedEnrollment.student_id || ""),
+      detailRows: nextDetailRows
+    });
+
+    setErrors((previous) => ({
+      ...previous,
+      [enrollmentHeaderResource]: ""
+    }));
+  }
+
   function handleStudentLookup() {
     const lookupValue = normalizeSearchValue(enrollmentDraft.studentLookup);
 
@@ -326,7 +376,8 @@ function useEnrollmentWorkspace({
     selectedStudentEnrollmentRows,
     selectedEnrollmentDetails,
     selectedEnrollmentTotalUnits,
-    resetEnrollmentSelection
+    resetEnrollmentSelection,
+    loadEnrollmentIntoDraft
   };
 }
 

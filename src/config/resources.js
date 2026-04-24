@@ -90,6 +90,14 @@ export const RESOURCE_CONFIG = {
       { name: "enroll_id", label: "Enrollment", type: "resource-select", resource: "enrollment", valueKey: "enroll_id", labelKey: "enroll_code", placeholder: "1" },
       { name: "suboffid", label: "Subject Offered", type: "resource-select", resource: "subjectoffered", valueKey: "suboffid", labelKey: "edpcode", secondaryLabelKey: "subjcode", placeholder: "1" }
     ]
+  },
+  enrollment_list: {
+    endpoint: "/enrollment",
+    title: "Enrollment List",
+    subtitle: "Enrollment headers table view",
+    primaryKey: "enroll_id",
+    columns: ["enroll_code", "name", "course_level", "enroll_date"],
+    formFields: []
   }
 };
 

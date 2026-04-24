@@ -1,6 +1,11 @@
 import React from "react";
 
 function AppHeader({ resourceEntries, activeResource, setActiveResource, currentConfig, actionLabel, onAction }) {
+  const enrollmentMenuKeys = ["enrollment", "enrollment_details", "enrollment_list"];
+  const enrollmentMenuEntries = resourceEntries.filter(([resourceKey]) => enrollmentMenuKeys.includes(resourceKey));
+  const regularEntries = resourceEntries.filter(([resourceKey]) => !enrollmentMenuKeys.includes(resourceKey));
+  const selectedEnrollmentMenu = enrollmentMenuKeys.includes(activeResource) ? activeResource : "";
+
   return (
     <>
       <header className="topbar">
@@ -8,7 +13,7 @@ function AppHeader({ resourceEntries, activeResource, setActiveResource, current
           <div className="brand-title">School Management System</div>
         </div>
         <nav className="main-nav" aria-label="Main Navigation">
-          {resourceEntries.map(([resourceKey, config]) => (
+          {regularEntries.map(([resourceKey, config]) => (
             <button
               key={resourceKey}
               className={`nav-link ${activeResource === resourceKey ? "active" : ""}`}
@@ -17,6 +22,21 @@ function AppHeader({ resourceEntries, activeResource, setActiveResource, current
               {config.title}
             </button>
           ))}
+
+          {enrollmentMenuEntries.length ? (
+            <label className={`nav-menu-group ${selectedEnrollmentMenu ? "active" : ""}`}>
+              <select value={selectedEnrollmentMenu} onChange={(event) => setActiveResource(event.target.value)} aria-label="Enrollment menu">
+                <option value="" disabled>
+                  Select view
+                </option>
+                {enrollmentMenuEntries.map(([resourceKey, config]) => (
+                  <option key={resourceKey} value={resourceKey}>
+                    {config.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
         </nav>
       </header>
 
